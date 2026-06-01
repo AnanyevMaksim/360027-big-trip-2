@@ -2,7 +2,7 @@ import SortView from '../view/sort-view.js';
 import EventListView from '../view/event-list-view.js';
 import EditPointView from '../view/form-point-view.js';
 import PointView from '../view/point-view.js';
-import NoPointView from '../view/no-point-view.js';
+import MessageView from '../view/message-view.js';
 import {render, replace} from '../framework/render.js';
 
 export default class BoardPresenter {
@@ -21,7 +21,7 @@ export default class BoardPresenter {
     this.#boardPoints = [...this.#pointsModel.points];
 
     if (this.#boardPoints.length === 0) {
-      render(new NoPointView(), this.#boardContainer);
+      render(new MessageView(), this.#boardContainer);
       return;
     }
 
