@@ -1,7 +1,7 @@
 import AbstractView from '../framework/view/abstract-view.js';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
-import {humanizePointDate, humanizePointTime} from '../utils.js';
+import {humanizePointDate, humanizePointTime} from '../utils/point.js';
 import {DESTINATIONS, OFFERS} from '../mock/point.js';
 
 dayjs.extend(duration);

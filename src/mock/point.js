@@ -155,6 +155,26 @@ export const mockPoints = [
     isFavorite: false,
     offerIds: [],
   },
+  {
+    id: '4',
+    type: 'bus',
+    destinationId: 1,
+    dateFrom: new Date('2026-05-01T10:00:00'),
+    dateTo: new Date('2026-05-01T12:00:00'),
+    basePrice: 30,
+    isFavorite: false,
+    offerIds: [2],
+  },
+  {
+    id: '5',
+    type: 'train',
+    destinationId: 2,
+    dateFrom: new Date('2026-06-01T08:00:00'),
+    dateTo: new Date('2026-06-02T10:00:00'),
+    basePrice: 60,
+    isFavorite: false,
+    offerIds: [3],
+  },
 ];
 
 export {DESTINATIONS, OFFERS};
