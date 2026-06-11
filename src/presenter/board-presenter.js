@@ -3,6 +3,7 @@ import EventListView from '../view/event-list-view.js';
 import MessageView from '../view/message-view.js';
 import PointPresenter from './point-presenter.js';
 import {render} from '../framework/render.js';
+import {updateItem} from '../utils/point.js';
 
 export default class BoardPresenter {
   #boardContainer = null;
@@ -31,9 +32,15 @@ export default class BoardPresenter {
     this.#boardPoints.forEach((point) => this.#renderPoint(point));
   }
 
+  #handlePointChange = (updatedPoint) => {
+    this.#boardPoints = updateItem(this.#boardPoints, updatedPoint);
+    this.#pointPresenters.get(updatedPoint.id).init(updatedPoint);
+  };
+
   #renderPoint(point) {
     const pointPresenter = new PointPresenter({
       pointListContainer: this.#eventListComponent.element,
+      onDataChange: this.#handlePointChange,
     });
 
     pointPresenter.init(point);
