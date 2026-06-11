@@ -2,18 +2,26 @@ import {render, replace, remove} from '../framework/render.js';
 import PointView from '../view/point-view.js';
 import EditPointView from '../view/form-point-view.js';
 
+const Mode = {
+  DEFAULT: 'DEFAULT',
+  EDITING: 'EDITING',
+};
+
 export default class PointPresenter {
   #pointListContainer = null;
   #handleDataChange = null;
+  #handleModeChange = null;
 
   #pointComponent = null;
   #pointEditComponent = null;
 
   #point = null;
+  #mode = Mode.DEFAULT;
 
-  constructor({pointListContainer, onDataChange}) {
+  constructor({pointListContainer, onDataChange, onModeChange}) {
     this.#pointListContainer = pointListContainer;
     this.#handleDataChange = onDataChange;
+    this.#handleModeChange = onModeChange;
   }
 
   init(point) {
@@ -38,11 +46,11 @@ export default class PointPresenter {
       return;
     }
 
-    if (this.#pointListContainer.contains(prevPointComponent.element)) {
+    if (this.#mode === Mode.DEFAULT) {
       replace(this.#pointComponent, prevPointComponent);
     }
 
-    if (this.#pointListContainer.contains(prevPointEditComponent.element)) {
+    if (this.#mode === Mode.EDITING) {
       replace(this.#pointEditComponent, prevPointEditComponent);
     }
 
@@ -55,14 +63,23 @@ export default class PointPresenter {
     remove(this.#pointEditComponent);
   }
 
+  resetView() {
+    if (this.#mode !== Mode.DEFAULT) {
+      this.#replaceFormToCard();
+    }
+  }
+
   #replaceCardToForm() {
     replace(this.#pointEditComponent, this.#pointComponent);
     document.addEventListener('keydown', this.#escKeyDownHandler);
+    this.#handleModeChange();
+    this.#mode = Mode.EDITING;
   }
 
   #replaceFormToCard() {
     replace(this.#pointComponent, this.#pointEditComponent);
     document.removeEventListener('keydown', this.#escKeyDownHandler);
+    this.#mode = Mode.DEFAULT;
   }
 
   #escKeyDownHandler = (evt) => {
@@ -76,7 +93,8 @@ export default class PointPresenter {
     this.#replaceCardToForm();
   };
 
-  #handleFormSubmit = () => {
+  #handleFormSubmit = (point) => {
+    this.#handleDataChange(point);
     this.#replaceFormToCard();
   };
 
