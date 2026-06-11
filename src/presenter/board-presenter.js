@@ -10,6 +10,7 @@ export default class BoardPresenter {
 
   #eventListComponent = new EventListView();
   #boardPoints = [];
+  #pointPresenters = new Map();
 
   constructor({boardContainer, pointsModel}) {
     this.#boardContainer = boardContainer;
@@ -36,5 +37,11 @@ export default class BoardPresenter {
     });
 
     pointPresenter.init(point);
+    this.#pointPresenters.set(point.id, pointPresenter);
+  }
+
+  #clearPointList() {
+    this.#pointPresenters.forEach((presenter) => presenter.destroy());
+    this.#pointPresenters.clear();
   }
 }
