@@ -12,4 +12,8 @@ function humanizePointTime(date) {
   return date ? dayjs(date).format('HH:mm') : '';
 }
 
-export {getRandomArrayElement, humanizePointDate, humanizePointTime};
+function updateItem(items, update) {
+  return items.map((item) => item.id === update.id ? update : item);
+}
+
+export {getRandomArrayElement, humanizePointDate, humanizePointTime, updateItem};
