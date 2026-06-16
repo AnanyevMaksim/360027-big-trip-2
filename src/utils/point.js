@@ -16,4 +16,18 @@ function updateItem(items, update) {
   return items.map((item) => item.id === update.id ? update : item);
 }
 
-export {getRandomArrayElement, humanizePointDate, humanizePointTime, updateItem};
+function sortPointDay(pointA, pointB) {
+  return dayjs(pointA.dateFrom).diff(dayjs(pointB.dateFrom));
+}
+
+function sortPointTime(pointA, pointB) {
+  const durationA = dayjs(pointA.dateTo).diff(dayjs(pointA.dateFrom));
+  const durationB = dayjs(pointB.dateTo).diff(dayjs(pointB.dateFrom));
+  return durationB - durationA;
+}
+
+function sortPointPrice(pointA, pointB) {
+  return pointB.basePrice - pointA.basePrice;
+}
+
+export {getRandomArrayElement, humanizePointDate, humanizePointTime, updateItem, sortPointDay, sortPointTime, sortPointPrice};
