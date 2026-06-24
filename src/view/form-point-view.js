@@ -188,11 +188,13 @@ function createEditPointTemplate(state) {
 
 export default class EditPointView extends AbstractStatefulView {
   #handleFormSubmit = null;
+  #handleRollupClick = null;
 
-  constructor({point = BLANK_POINT, onFormSubmit} = {}) {
+  constructor({point = BLANK_POINT, onFormSubmit, onRollupClick} = {}) {
     super();
     this._setState(EditPointView.parsePointToState(point));
     this.#handleFormSubmit = onFormSubmit;
+    this.#handleRollupClick = onRollupClick;
 
     this._restoreHandlers();
   }
@@ -201,11 +203,17 @@ export default class EditPointView extends AbstractStatefulView {
     return createEditPointTemplate(this._state);
   }
 
+  reset(point) {
+    this.updateElement(
+      EditPointView.parsePointToState(point),
+    );
+  }
+
   _restoreHandlers() {
     this.element.querySelector('form')
       .addEventListener('submit', this.#formSubmitHandler);
     this.element.querySelector('.event__rollup-btn')
-      .addEventListener('click', this.#formSubmitHandler);
+      .addEventListener('click', this.#rollupClickHandler);
     this.element.querySelector('.event__type-group')
       .addEventListener('change', this.#typeChangeHandler);
     this.element.querySelector('.event__input--destination')
@@ -259,6 +267,11 @@ export default class EditPointView extends AbstractStatefulView {
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
     this.#handleFormSubmit(EditPointView.parseStateToPoint(this._state));
+  };
+
+  #rollupClickHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleRollupClick();
   };
 
   static parsePointToState(point) {
