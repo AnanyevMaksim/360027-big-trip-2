@@ -1,4 +1,4 @@
-import AbstractView from '../framework/view/abstract-view.js';
+import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import dayjs from 'dayjs';
 import {POINT_TYPES} from '../const.js';
 import {DESTINATIONS, OFFERS} from '../mock/point.js';
@@ -91,8 +91,8 @@ function createDestinationTemplate(destinationId) {
   `;
 }
 
-function createEditPointTemplate(point) {
-  const {type, destinationId, dateFrom, dateTo, basePrice, offerIds} = point;
+function createEditPointTemplate(state) {
+  const {type, destinationId, dateFrom, dateTo, basePrice, offerIds} = state;
 
   const destination = DESTINATIONS.find((dest) => dest.id === destinationId);
   const destinationName = destination ? destination.name : '';
@@ -186,28 +186,38 @@ function createEditPointTemplate(point) {
   );
 }
 
-export default class EditPointView extends AbstractView {
-  #point = null;
+export default class EditPointView extends AbstractStatefulView {
   #handleFormSubmit = null;
 
   constructor({point = BLANK_POINT, onFormSubmit} = {}) {
     super();
-    this.#point = point;
+    this._setState(EditPointView.parsePointToState(point));
     this.#handleFormSubmit = onFormSubmit;
 
+    this._restoreHandlers();
+  }
+
+  get template() {
+    return createEditPointTemplate(this._state);
+  }
+
+  _restoreHandlers() {
     this.element.querySelector('form')
       .addEventListener('submit', this.#formSubmitHandler);
-
     this.element.querySelector('.event__rollup-btn')
       .addEventListener('click', this.#formSubmitHandler);
   }
 
-  get template() {
-    return createEditPointTemplate(this.#point);
-  }
-
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
-    this.#handleFormSubmit(this.#point);
+    this.#handleFormSubmit(EditPointView.parseStateToPoint(this._state));
   };
+
+  static parsePointToState(point) {
+    return {...point};
+  }
+
+  static parseStateToPoint(state) {
+    return {...state};
+  }
 }
