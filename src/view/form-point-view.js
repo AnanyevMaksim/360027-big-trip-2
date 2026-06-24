@@ -210,6 +210,8 @@ export default class EditPointView extends AbstractStatefulView {
       .addEventListener('change', this.#typeChangeHandler);
     this.element.querySelector('.event__input--destination')
       .addEventListener('change', this.#destinationChangeHandler);
+    this.element.querySelector('.event__input--price')
+      .addEventListener('input', this.#priceInputHandler);
   }
 
   #typeChangeHandler = (evt) => {
@@ -228,6 +230,12 @@ export default class EditPointView extends AbstractStatefulView {
 
     this.updateElement({
       destinationId: selectedDestination.id,
+    });
+  };
+
+  #priceInputHandler = (evt) => {
+    this._setState({
+      basePrice: parseInt(evt.target.value, 10),
     });
   };
 
