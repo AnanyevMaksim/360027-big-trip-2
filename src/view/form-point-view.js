@@ -212,6 +212,11 @@ export default class EditPointView extends AbstractStatefulView {
       .addEventListener('change', this.#destinationChangeHandler);
     this.element.querySelector('.event__input--price')
       .addEventListener('input', this.#priceInputHandler);
+
+    const offersContainer = this.element.querySelector('.event__available-offers');
+    if (offersContainer) {
+      offersContainer.addEventListener('change', this.#offerChangeHandler);
+    }
   }
 
   #typeChangeHandler = (evt) => {
@@ -236,6 +241,18 @@ export default class EditPointView extends AbstractStatefulView {
   #priceInputHandler = (evt) => {
     this._setState({
       basePrice: parseInt(evt.target.value, 10),
+    });
+  };
+
+  #offerChangeHandler = (evt) => {
+    const offerId = parseInt(evt.target.name.replace('event-offer-', ''), 10);
+
+    const updatedOfferIds = this._state.offerIds.includes(offerId)
+      ? this._state.offerIds.filter((id) => id !== offerId)
+      : [...this._state.offerIds, offerId];
+
+    this._setState({
+      offerIds: updatedOfferIds,
     });
   };
 
