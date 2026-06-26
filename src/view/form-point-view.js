@@ -1,4 +1,4 @@
-import AbstractView from '../framework/view/abstract-view.js';
+import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import dayjs from 'dayjs';
 import {POINT_TYPES} from '../const.js';
 import {DESTINATIONS, OFFERS} from '../mock/point.js';
@@ -91,8 +91,8 @@ function createDestinationTemplate(destinationId) {
   `;
 }
 
-function createEditPointTemplate(point) {
-  const {type, destinationId, dateFrom, dateTo, basePrice, offerIds} = point;
+function createEditPointTemplate(state) {
+  const {type, destinationId, dateFrom, dateTo, basePrice, offerIds} = state;
 
   const destination = DESTINATIONS.find((dest) => dest.id === destinationId);
   const destinationName = destination ? destination.name : '';
@@ -186,28 +186,99 @@ function createEditPointTemplate(point) {
   );
 }
 
-export default class EditPointView extends AbstractView {
-  #point = null;
+export default class EditPointView extends AbstractStatefulView {
   #handleFormSubmit = null;
+  #handleRollupClick = null;
 
-  constructor({point = BLANK_POINT, onFormSubmit} = {}) {
+  constructor({point = BLANK_POINT, onFormSubmit, onRollupClick} = {}) {
     super();
-    this.#point = point;
+    this._setState(EditPointView.parsePointToState(point));
     this.#handleFormSubmit = onFormSubmit;
+    this.#handleRollupClick = onRollupClick;
 
-    this.element.querySelector('form')
-      .addEventListener('submit', this.#formSubmitHandler);
-
-    this.element.querySelector('.event__rollup-btn')
-      .addEventListener('click', this.#formSubmitHandler);
+    this._restoreHandlers();
   }
 
   get template() {
-    return createEditPointTemplate(this.#point);
+    return createEditPointTemplate(this._state);
   }
+
+  reset(point) {
+    this.updateElement(
+      EditPointView.parsePointToState(point),
+    );
+  }
+
+  _restoreHandlers() {
+    this.element.querySelector('form')
+      .addEventListener('submit', this.#formSubmitHandler);
+    this.element.querySelector('.event__rollup-btn')
+      .addEventListener('click', this.#rollupClickHandler);
+    this.element.querySelector('.event__type-group')
+      .addEventListener('change', this.#typeChangeHandler);
+    this.element.querySelector('.event__input--destination')
+      .addEventListener('change', this.#destinationChangeHandler);
+    this.element.querySelector('.event__input--price')
+      .addEventListener('input', this.#priceInputHandler);
+
+    const offersContainer = this.element.querySelector('.event__available-offers');
+    if (offersContainer) {
+      offersContainer.addEventListener('change', this.#offerChangeHandler);
+    }
+  }
+
+  #typeChangeHandler = (evt) => {
+    this.updateElement({
+      type: evt.target.value,
+      offerIds: [],
+    });
+  };
+
+  #destinationChangeHandler = (evt) => {
+    const selectedDestination = DESTINATIONS.find((dest) => dest.name === evt.target.value);
+
+    if (!selectedDestination) {
+      return;
+    }
+
+    this.updateElement({
+      destinationId: selectedDestination.id,
+    });
+  };
+
+  #priceInputHandler = (evt) => {
+    this._setState({
+      basePrice: parseInt(evt.target.value, 10),
+    });
+  };
+
+  #offerChangeHandler = (evt) => {
+    const offerId = parseInt(evt.target.name.replace('event-offer-', ''), 10);
+
+    const updatedOfferIds = this._state.offerIds.includes(offerId)
+      ? this._state.offerIds.filter((id) => id !== offerId)
+      : [...this._state.offerIds, offerId];
+
+    this._setState({
+      offerIds: updatedOfferIds,
+    });
+  };
 
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
-    this.#handleFormSubmit(this.#point);
+    this.#handleFormSubmit(EditPointView.parseStateToPoint(this._state));
   };
+
+  #rollupClickHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleRollupClick();
+  };
+
+  static parsePointToState(point) {
+    return {...point};
+  }
+
+  static parseStateToPoint(state) {
+    return {...state};
+  }
 }
