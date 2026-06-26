@@ -52,6 +52,7 @@ function createOffersTemplate(offerIds, type) {
               class="event__offer-checkbox  visually-hidden"
               id="event-offer-${offer.id}-1"
               type="checkbox"
+              value="${offer.id}"
               name="event-offer-${offer.id}"
               ${offerIds.includes(offer.id) ? 'checked' : ''}
             >
@@ -222,6 +223,7 @@ export default class EditPointView extends AbstractStatefulView {
       .addEventListener('input', this.#priceInputHandler);
 
     const offersContainer = this.element.querySelector('.event__available-offers');
+
     if (offersContainer) {
       offersContainer.addEventListener('change', this.#offerChangeHandler);
     }
@@ -253,7 +255,7 @@ export default class EditPointView extends AbstractStatefulView {
   };
 
   #offerChangeHandler = (evt) => {
-    const offerId = parseInt(evt.target.name.replace('event-offer-', ''), 10);
+    const offerId = Number(evt.target.value);
 
     const updatedOfferIds = this._state.offerIds.includes(offerId)
       ? this._state.offerIds.filter((id) => id !== offerId)
