@@ -12,10 +12,6 @@ function humanizePointTime(date) {
   return date ? dayjs(date).format('HH:mm') : '';
 }
 
-function updateItem(items, update) {
-  return items.map((item) => item.id === update.id ? update : item);
-}
-
 function sortPointByDay(pointA, pointB) {
   return dayjs(pointA.dateFrom).diff(dayjs(pointB.dateFrom));
 }
@@ -30,4 +26,4 @@ function sortPointByPrice(pointA, pointB) {
   return pointB.basePrice - pointA.basePrice;
 }
 
-export {getRandomArrayElement, humanizePointDate, humanizePointTime, updateItem, sortPointByDay, sortPointByTime, sortPointByPrice};
+export {getRandomArrayElement, humanizePointDate, humanizePointTime, sortPointByDay, sortPointByTime, sortPointByPrice};
