@@ -1,6 +1,7 @@
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import dayjs from 'dayjs';
 import flatpickr from 'flatpickr';
+import he from 'he';
 import 'flatpickr/dist/flatpickr.min.css';
 import {POINT_TYPES} from '../const.js';
 import {DESTINATIONS, OFFERS} from '../mock/point.js';
@@ -131,7 +132,7 @@ function createEditPointTemplate(state) {
               id="event-destination-1"
               type="text"
               name="event-destination"
-              value="${destinationName}"
+              value="${he.encode(destinationName)}"
               list="destination-list-1"
             >
             <datalist id="destination-list-1">
@@ -243,6 +244,8 @@ export default class EditPointView extends AbstractStatefulView {
       .addEventListener('change', this.#destinationChangeHandler);
     this.element.querySelector('.event__input--price')
       .addEventListener('input', this.#priceInputHandler);
+    this.element.querySelector('.event__input--price')
+      .addEventListener('keydown', this.#priceKeydownHandler);
 
     const offersContainer = this.element.querySelector('.event__available-offers');
     if (offersContainer) {
@@ -307,6 +310,12 @@ export default class EditPointView extends AbstractStatefulView {
     this._setState({
       basePrice: parseInt(evt.target.value, 10),
     });
+  };
+
+  #priceKeydownHandler = (evt) => {
+    if (!/[0-9]/.test(evt.key) && evt.key !== 'Backspace' && evt.key !== 'Delete' && evt.key !== 'ArrowLeft' && evt.key !== 'ArrowRight' && evt.key !== 'Tab') {
+      evt.preventDefault();
+    }
   };
 
   #offerChangeHandler = (evt) => {
