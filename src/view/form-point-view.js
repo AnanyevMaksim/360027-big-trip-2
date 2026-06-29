@@ -192,14 +192,16 @@ function createEditPointTemplate(state) {
 export default class EditPointView extends AbstractStatefulView {
   #handleFormSubmit = null;
   #handleRollupClick = null;
+  #handleDeleteClick = null;
   #datepickerFrom = null;
   #datepickerTo = null;
 
-  constructor({point = BLANK_POINT, onFormSubmit, onRollupClick} = {}) {
+  constructor({point = BLANK_POINT, onFormSubmit, onRollupClick, onDeleteClick} = {}) {
     super();
     this._setState(EditPointView.parsePointToState(point));
     this.#handleFormSubmit = onFormSubmit;
     this.#handleRollupClick = onRollupClick;
+    this.#handleDeleteClick = onDeleteClick;
 
     this._restoreHandlers();
   }
@@ -233,6 +235,8 @@ export default class EditPointView extends AbstractStatefulView {
       .addEventListener('submit', this.#formSubmitHandler);
     this.element.querySelector('.event__rollup-btn')
       .addEventListener('click', this.#rollupClickHandler);
+    this.element.querySelector('.event__reset-btn')
+      .addEventListener('click', this.#formDeleteClickHandler);
     this.element.querySelector('.event__type-group')
       .addEventListener('change', this.#typeChangeHandler);
     this.element.querySelector('.event__input--destination')
@@ -272,16 +276,12 @@ export default class EditPointView extends AbstractStatefulView {
   }
 
   #dateFromChangeHandler = ([userDate]) => {
-    this._setState({
-      dateFrom: userDate,
-    });
+    this._setState({dateFrom: userDate});
     this.#datepickerTo.set('minDate', this._state.dateFrom);
   };
 
   #dateToChangeHandler = ([userDate]) => {
-    this._setState({
-      dateTo: userDate,
-    });
+    this._setState({dateTo: userDate});
   };
 
   #typeChangeHandler = (evt) => {
@@ -316,9 +316,7 @@ export default class EditPointView extends AbstractStatefulView {
       ? this._state.offerIds.filter((id) => id !== offerId)
       : [...this._state.offerIds, offerId];
 
-    this._setState({
-      offerIds: updatedOfferIds,
-    });
+    this._setState({offerIds: updatedOfferIds});
   };
 
   #formSubmitHandler = (evt) => {
@@ -329,6 +327,11 @@ export default class EditPointView extends AbstractStatefulView {
   #rollupClickHandler = (evt) => {
     evt.preventDefault();
     this.#handleRollupClick();
+  };
+
+  #formDeleteClickHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleDeleteClick(EditPointView.parseStateToPoint(this._state));
   };
 
   static parsePointToState(point) {
