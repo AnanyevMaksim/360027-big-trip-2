@@ -116,7 +116,9 @@ export default class BoardPresenter {
   }
 
   #renderNoPoints() {
-    this.#noPointComponent = new MessageView();
+    this.#noPointComponent = new MessageView({
+      filterType: this.#filterModel.filter,
+    });
     render(this.#noPointComponent, this.#boardContainer);
   }
 
