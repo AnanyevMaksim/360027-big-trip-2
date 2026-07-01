@@ -24,7 +24,7 @@ export default class NewPointPresenter {
     this.#pointEditComponent = new EditPointView({
       onFormSubmit: this.#handleFormSubmit,
       onDeleteClick: this.#handleDeleteClick,
-      onRollupClick: this.#handleDeleteClick,
+      isEditView: false,
     });
 
     render(this.#pointEditComponent, this.#pointListContainer, RenderPosition.AFTERBEGIN);

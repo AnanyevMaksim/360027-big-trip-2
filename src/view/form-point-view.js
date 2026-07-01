@@ -96,7 +96,7 @@ function createDestinationTemplate(destinationId) {
 }
 
 function createEditPointTemplate(state) {
-  const {type, destinationId, dateFrom, dateTo, basePrice, offerIds} = state;
+  const {type, destinationId, dateFrom, dateTo, basePrice, offerIds, isEditView} = state;
 
   const destination = DESTINATIONS.find((dest) => dest.id === destinationId);
   const destinationName = destination ? destination.name : '';
@@ -175,10 +175,8 @@ function createEditPointTemplate(state) {
           </div>
 
           <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-          <button class="event__reset-btn" type="reset">Delete</button>
-          <button class="event__rollup-btn" type="button">
-            <span class="visually-hidden">Open event</span>
-          </button>
+          <button class="event__reset-btn" type="reset">${isEditView ? 'Delete' : 'Cancel'}</button>
+          ${isEditView ? '<button class="event__rollup-btn" type="button"><span class="visually-hidden">Open event</span></button>' : ''}
         </header>
 
         <section class="event__details">
@@ -197,9 +195,9 @@ export default class EditPointView extends AbstractStatefulView {
   #datepickerFrom = null;
   #datepickerTo = null;
 
-  constructor({point = BLANK_POINT, onFormSubmit, onRollupClick, onDeleteClick} = {}) {
+  constructor({point = BLANK_POINT, onFormSubmit, onRollupClick, onDeleteClick, isEditView = true} = {}) {
     super();
-    this._setState(EditPointView.parsePointToState(point));
+    this._setState(EditPointView.parsePointToState(point, isEditView));
     this.#handleFormSubmit = onFormSubmit;
     this.#handleRollupClick = onRollupClick;
     this.#handleDeleteClick = onDeleteClick;
@@ -227,15 +225,13 @@ export default class EditPointView extends AbstractStatefulView {
 
   reset(point) {
     this.updateElement(
-      EditPointView.parsePointToState(point),
+      EditPointView.parsePointToState(point, true),
     );
   }
 
   _restoreHandlers() {
     this.element.querySelector('form')
       .addEventListener('submit', this.#formSubmitHandler);
-    this.element.querySelector('.event__rollup-btn')
-      .addEventListener('click', this.#rollupClickHandler);
     this.element.querySelector('.event__reset-btn')
       .addEventListener('click', this.#formDeleteClickHandler);
     this.element.querySelector('.event__type-group')
@@ -246,6 +242,11 @@ export default class EditPointView extends AbstractStatefulView {
       .addEventListener('input', this.#priceInputHandler);
     this.element.querySelector('.event__input--price')
       .addEventListener('keydown', this.#priceKeydownHandler);
+
+    if (this._state.isEditView) {
+      this.element.querySelector('.event__rollup-btn')
+        .addEventListener('click', this.#rollupClickHandler);
+    }
 
     const offersContainer = this.element.querySelector('.event__available-offers');
     if (offersContainer) {
@@ -343,11 +344,13 @@ export default class EditPointView extends AbstractStatefulView {
     this.#handleDeleteClick(EditPointView.parseStateToPoint(this._state));
   };
 
-  static parsePointToState(point) {
-    return {...point};
+  static parsePointToState(point, isEditView = true) {
+    return {...point, isEditView};
   }
 
   static parseStateToPoint(state) {
-    return {...state};
+    const point = {...state};
+    delete point.isEditView;
+    return point;
   }
 }
