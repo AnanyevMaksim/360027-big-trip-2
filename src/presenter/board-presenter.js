@@ -1,6 +1,7 @@
 import SortView from '../view/sort-view.js';
 import EventListView from '../view/event-list-view.js';
 import MessageView from '../view/message-view.js';
+import LoadingView from '../view/loading-view.js';
 import PointPresenter from './point-presenter.js';
 import NewPointPresenter from './new-point-presenter.js';
 import {render, remove, RenderPosition} from '../framework/render.js';
@@ -16,10 +17,12 @@ export default class BoardPresenter {
   #sortComponent = null;
   #eventListComponent = new EventListView();
   #noPointComponent = null;
+  #loadingComponent = new LoadingView();
   #newPointPresenter = null;
 
   #currentSortType = SortType.DAY;
   #pointPresenters = new Map();
+  #isLoading = true;
 
   constructor({boardContainer, pointsModel, filterModel, onNewPointDestroy}) {
     this.#boardContainer = boardContainer;
@@ -88,6 +91,11 @@ export default class BoardPresenter {
         this.#clearBoard({resetSortType: true});
         this.#renderBoard();
         break;
+      case UpdateType.INIT:
+        this.#isLoading = false;
+        remove(this.#loadingComponent);
+        this.#renderBoard();
+        break;
     }
   };
 
@@ -130,6 +138,10 @@ export default class BoardPresenter {
     points.forEach((point) => this.#renderPoint(point));
   }
 
+  #renderLoading() {
+    render(this.#loadingComponent, this.#boardContainer);
+  }
+
   #renderNoPoints() {
     this.#noPointComponent = new MessageView({
       filterType: this.#filterModel.filter,
@@ -156,6 +168,11 @@ export default class BoardPresenter {
   }
 
   #renderBoard() {
+    if (this.#isLoading) {
+      this.#renderLoading();
+      return;
+    }
+
     if (this.points.length === 0) {
       this.#renderNoPoints();
       return;
