@@ -1,6 +1,6 @@
-import {remove, render, RenderPosition} from '../framework/render.js';
+import { remove, render, RenderPosition } from '../framework/render.js';
 import EditPointView from '../view/form-point-view.js';
-import {UserAction, UpdateType} from '../const.js';
+import { UserAction, UpdateType } from '../const.js';
 
 export default class NewPointPresenter {
   #pointListContainer = null;
@@ -11,7 +11,7 @@ export default class NewPointPresenter {
 
   #pointEditComponent = null;
 
-  constructor({pointListContainer, destinationsModel, offersModel, onDataChange, onDestroy}) {
+  constructor({ pointListContainer, destinationsModel, offersModel, onDataChange, onDestroy }) {
     this.#pointListContainer = pointListContainer;
     this.#destinationsModel = destinationsModel;
     this.#offersModel = offersModel;
@@ -55,6 +55,18 @@ export default class NewPointPresenter {
       isDisabled: true,
       isSaving: true,
     });
+  }
+
+  setAborting() {
+    const resetFormState = () => {
+      this.#pointEditComponent.updateElement({
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false,
+      });
+    };
+
+    this.#pointEditComponent.shake(resetFormState);
   }
 
   #handleFormSubmit = (point) => {
