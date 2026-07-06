@@ -4,7 +4,6 @@ import flatpickr from 'flatpickr';
 import he from 'he';
 import 'flatpickr/dist/flatpickr.min.css';
 import {POINT_TYPES} from '../const.js';
-import {DESTINATIONS, OFFERS} from '../mock/point.js';
 
 const BLANK_POINT = {
   type: POINT_TYPES[0],
@@ -34,12 +33,12 @@ function createTypeListTemplate(currentType) {
   `).join('');
 }
 
-function createDestinationListTemplate() {
-  return DESTINATIONS.map((dest) => `<option value="${dest.name}"></option>`).join('');
+function createDestinationListTemplate(destinations) {
+  return destinations.map((dest) => `<option value="${dest.name}"></option>`).join('');
 }
 
-function createOffersTemplate(offerIds, type) {
-  const offersForType = OFFERS.find((item) => item.type === type).offers;
+function createOffersTemplate(offerIds, type, offers) {
+  const offersForType = offers.find((item) => item.type === type)?.offers ?? [];
 
   if (offersForType.length === 0) {
     return '';
@@ -71,8 +70,8 @@ function createOffersTemplate(offerIds, type) {
   `;
 }
 
-function createDestinationTemplate(destinationId) {
-  const destination = DESTINATIONS.find((dest) => dest.id === destinationId);
+function createDestinationTemplate(destinationId, destinations) {
+  const destination = destinations.find((dest) => dest.id === destinationId);
 
   if (!destination || (!destination.description && destination.pictures.length === 0)) {
     return '';
@@ -95,10 +94,10 @@ function createDestinationTemplate(destinationId) {
   `;
 }
 
-function createEditPointTemplate(state) {
+function createEditPointTemplate(state, destinations, offers) {
   const {type, destinationId, dateFrom, dateTo, basePrice, offerIds, isEditView} = state;
 
-  const destination = DESTINATIONS.find((dest) => dest.id === destinationId);
+  const destination = destinations.find((dest) => dest.id === destinationId);
   const destinationName = destination ? destination.name : '';
 
   const startDate = dateFrom ? dayjs(dateFrom).format('DD/MM/YY HH:mm') : '';
@@ -136,7 +135,7 @@ function createEditPointTemplate(state) {
               list="destination-list-1"
             >
             <datalist id="destination-list-1">
-              ${createDestinationListTemplate()}
+              ${createDestinationListTemplate(destinations)}
             </datalist>
           </div>
 
@@ -180,8 +179,8 @@ function createEditPointTemplate(state) {
         </header>
 
         <section class="event__details">
-          ${createOffersTemplate(offerIds, type)}
-          ${createDestinationTemplate(destinationId)}
+          ${createOffersTemplate(offerIds, type, offers)}
+          ${createDestinationTemplate(destinationId, destinations)}
         </section>
       </form>
     </li>`
@@ -189,14 +188,18 @@ function createEditPointTemplate(state) {
 }
 
 export default class EditPointView extends AbstractStatefulView {
+  #destinations = null;
+  #offers = null;
   #handleFormSubmit = null;
   #handleRollupClick = null;
   #handleDeleteClick = null;
   #datepickerFrom = null;
   #datepickerTo = null;
 
-  constructor({point = BLANK_POINT, onFormSubmit, onRollupClick, onDeleteClick, isEditView = true} = {}) {
+  constructor({point = BLANK_POINT, destinations, offers, onFormSubmit, onRollupClick, onDeleteClick, isEditView = true} = {}) {
     super();
+    this.#destinations = destinations;
+    this.#offers = offers;
     this._setState(EditPointView.parsePointToState(point, isEditView));
     this.#handleFormSubmit = onFormSubmit;
     this.#handleRollupClick = onRollupClick;
@@ -206,7 +209,7 @@ export default class EditPointView extends AbstractStatefulView {
   }
 
   get template() {
-    return createEditPointTemplate(this._state);
+    return createEditPointTemplate(this._state, this.#destinations, this.#offers);
   }
 
   removeElement() {
@@ -296,7 +299,7 @@ export default class EditPointView extends AbstractStatefulView {
   };
 
   #destinationChangeHandler = (evt) => {
-    const selectedDestination = DESTINATIONS.find((dest) => dest.name === evt.target.value);
+    const selectedDestination = this.#destinations.find((dest) => dest.name === evt.target.value);
 
     if (!selectedDestination) {
       return;
@@ -320,7 +323,7 @@ export default class EditPointView extends AbstractStatefulView {
   };
 
   #offerChangeHandler = (evt) => {
-    const offerId = Number(evt.target.value);
+    const offerId = evt.target.value;
 
     const updatedOfferIds = this._state.offerIds.includes(offerId)
       ? this._state.offerIds.filter((id) => id !== offerId)
