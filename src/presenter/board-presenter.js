@@ -5,10 +5,16 @@ import LoadingView from '../view/loading-view.js';
 import NewPointButtonView from '../view/new-point-button-view.js';
 import PointPresenter from './point-presenter.js';
 import NewPointPresenter from './new-point-presenter.js';
-import { render, remove, RenderPosition } from '../framework/render.js';
-import { filter } from '../utils/filter.js';
-import { sortPointByDay, sortPointByTime, sortPointByPrice } from '../utils/point.js';
-import { SortType, UpdateType, UserAction, FilterType } from '../const.js';
+import UiBlocker from '../framework/ui-blocker/ui-blocker.js';
+import {render, remove, RenderPosition} from '../framework/render.js';
+import {filter} from '../utils/filter.js';
+import {sortPointByDay, sortPointByTime, sortPointByPrice} from '../utils/point.js';
+import {SortType, UpdateType, UserAction, FilterType} from '../const.js';
+
+const TimeLimit = {
+  LOWER_LIMIT: 350,
+  UPPER_LIMIT: 1000,
+};
 
 export default class BoardPresenter {
   #boardContainer = null;
@@ -29,8 +35,12 @@ export default class BoardPresenter {
   #pointPresenters = new Map();
   #isLoading = true;
   #isError = false;
+  #uiBlocker = new UiBlocker({
+    lowerLimit: TimeLimit.LOWER_LIMIT,
+    upperLimit: TimeLimit.UPPER_LIMIT,
+  });
 
-  constructor({ boardContainer, tripMainContainer, pointsModel, destinationsModel, offersModel, filterModel }) {
+  constructor({boardContainer, tripMainContainer, pointsModel, destinationsModel, offersModel, filterModel}) {
     this.#boardContainer = boardContainer;
     this.#tripMainContainer = tripMainContainer;
     this.#pointsModel = pointsModel;
@@ -84,6 +94,8 @@ export default class BoardPresenter {
   }
 
   #handleViewAction = async (actionType, updateType, update) => {
+    this.#uiBlocker.block();
+
     switch (actionType) {
       case UserAction.UPDATE_POINT:
         this.#pointPresenters.get(update.id).setSaving();
@@ -110,6 +122,8 @@ export default class BoardPresenter {
         }
         break;
     }
+
+    this.#uiBlocker.unblock();
   };
 
   #handleModelEvent = (updateType, data) => {
@@ -122,7 +136,7 @@ export default class BoardPresenter {
         this.#renderBoard();
         break;
       case UpdateType.MAJOR:
-        this.#clearBoard({ resetSortType: true });
+        this.#clearBoard({resetSortType: true});
         this.#renderBoard();
         break;
       case UpdateType.INIT:
@@ -204,7 +218,7 @@ export default class BoardPresenter {
     render(this.#noPointComponent, this.#boardContainer);
   }
 
-  #clearBoard({ resetSortType = false } = {}) {
+  #clearBoard({resetSortType = false} = {}) {
     this.#newPointPresenter.destroy();
     this.#pointPresenters.forEach((presenter) => presenter.destroy());
     this.#pointPresenters.clear();

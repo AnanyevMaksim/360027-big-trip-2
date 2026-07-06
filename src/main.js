@@ -6,7 +6,7 @@ import OffersModel from './model/offers-model.js';
 import FilterModel from './model/filter-model.js';
 import PointsApiService from './points-api-service.js';
 
-const AUTHORIZATION = 'Basic xK9mP2nQr7sL4vW';
+const AUTHORIZATION = 'Basic xK9mP2nQr7sL4vQ';
 const END_POINT = 'https://22.objects.htmlacademy.pro/big-trip';
 
 const tripMainElement = document.querySelector('.trip-main');
