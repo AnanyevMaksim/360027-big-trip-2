@@ -8,21 +8,25 @@ const NoPointsTextType = {
   [FilterType.FUTURE]: 'There are no future events now',
 };
 
-function createMessageTemplate(filterType) {
-  const noPointsTextValue = NoPointsTextType[filterType];
+const ERROR_TEXT = 'Failed to load latest route information';
 
-  return `<p class="trip-events__msg">${noPointsTextValue}</p>`;
+function createMessageTemplate(filterType, isError) {
+  const messageText = isError ? ERROR_TEXT : NoPointsTextType[filterType];
+
+  return `<p class="trip-events__msg">${messageText}</p>`;
 }
 
 export default class MessageView extends AbstractView {
   #filterType = null;
+  #isError = false;
 
-  constructor({filterType}) {
+  constructor({filterType, isError = false}) {
     super();
     this.#filterType = filterType;
+    this.#isError = isError;
   }
 
   get template() {
-    return createMessageTemplate(this.#filterType);
+    return createMessageTemplate(this.#filterType, this.#isError);
   }
 }

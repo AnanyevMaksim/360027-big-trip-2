@@ -2,6 +2,7 @@ import SortView from '../view/sort-view.js';
 import EventListView from '../view/event-list-view.js';
 import MessageView from '../view/message-view.js';
 import LoadingView from '../view/loading-view.js';
+import NewPointButtonView from '../view/new-point-button-view.js';
 import PointPresenter from './point-presenter.js';
 import NewPointPresenter from './new-point-presenter.js';
 import {render, remove, RenderPosition} from '../framework/render.js';
@@ -11,6 +12,7 @@ import {SortType, UpdateType, UserAction, FilterType} from '../const.js';
 
 export default class BoardPresenter {
   #boardContainer = null;
+  #tripMainContainer = null;
   #pointsModel = null;
   #destinationsModel = null;
   #offersModel = null;
@@ -20,14 +22,17 @@ export default class BoardPresenter {
   #eventListComponent = new EventListView();
   #noPointComponent = null;
   #loadingComponent = new LoadingView();
+  #newPointButtonComponent = null;
   #newPointPresenter = null;
 
   #currentSortType = SortType.DAY;
   #pointPresenters = new Map();
   #isLoading = true;
+  #isError = false;
 
-  constructor({boardContainer, pointsModel, destinationsModel, offersModel, filterModel, onNewPointDestroy}) {
+  constructor({boardContainer, tripMainContainer, pointsModel, destinationsModel, offersModel, filterModel}) {
     this.#boardContainer = boardContainer;
+    this.#tripMainContainer = tripMainContainer;
     this.#pointsModel = pointsModel;
     this.#destinationsModel = destinationsModel;
     this.#offersModel = offersModel;
@@ -38,7 +43,7 @@ export default class BoardPresenter {
       destinationsModel: this.#destinationsModel,
       offersModel: this.#offersModel,
       onDataChange: this.#handleViewAction,
-      onDestroy: onNewPointDestroy,
+      onDestroy: this.#handleNewPointFormClose,
     });
 
     this.#pointsModel.addObserver(this.#handleModelEvent);
@@ -61,10 +66,18 @@ export default class BoardPresenter {
   }
 
   init() {
+    this.#renderNewPointButton();
     this.#renderBoard();
   }
 
-  createPoint() {
+  initError() {
+    this.#isLoading = false;
+    this.#isError = true;
+    remove(this.#loadingComponent);
+    this.#renderBoard();
+  }
+
+  #createPoint() {
     this.#currentSortType = SortType.DAY;
     this.#filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
     this.#newPointPresenter.init();
@@ -100,6 +113,7 @@ export default class BoardPresenter {
       case UpdateType.INIT:
         this.#isLoading = false;
         remove(this.#loadingComponent);
+        this.#newPointButtonComponent.setDisabled(false);
         this.#renderBoard();
         break;
     }
@@ -119,6 +133,23 @@ export default class BoardPresenter {
     this.#clearBoard();
     this.#renderBoard();
   };
+
+  #handleNewPointButtonClick = () => {
+    this.#createPoint();
+    this.#newPointButtonComponent.setDisabled(true);
+  };
+
+  #handleNewPointFormClose = () => {
+    this.#newPointButtonComponent.setDisabled(false);
+  };
+
+  #renderNewPointButton() {
+    this.#newPointButtonComponent = new NewPointButtonView({
+      onClick: this.#handleNewPointButtonClick,
+    });
+    this.#newPointButtonComponent.setDisabled(true);
+    render(this.#newPointButtonComponent, this.#tripMainContainer);
+  }
 
   #renderSort() {
     this.#sortComponent = new SortView({
@@ -153,6 +184,7 @@ export default class BoardPresenter {
   #renderNoPoints() {
     this.#noPointComponent = new MessageView({
       filterType: this.#filterModel.filter,
+      isError: this.#isError,
     });
     render(this.#noPointComponent, this.#boardContainer);
   }
@@ -178,6 +210,11 @@ export default class BoardPresenter {
   #renderBoard() {
     if (this.#isLoading) {
       this.#renderLoading();
+      return;
+    }
+
+    if (this.#isError) {
+      this.#renderNoPoints();
       return;
     }
 
