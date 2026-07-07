@@ -6,7 +6,7 @@ import 'flatpickr/dist/flatpickr.min.css';
 import {POINT_TYPES} from '../const.js';
 
 const BLANK_POINT = {
-  type: POINT_TYPES[0],
+  type: 'flight',
   destinationId: null,
   dateFrom: null,
   dateTo: null,
@@ -15,7 +15,7 @@ const BLANK_POINT = {
   offerIds: [],
 };
 
-function createTypeListTemplate(currentType) {
+function createTypeListTemplate(currentType, isDisabled) {
   return POINT_TYPES.map((type) => `
     <div class="event__type-item">
       <input
@@ -25,6 +25,7 @@ function createTypeListTemplate(currentType) {
         name="event-type"
         value="${type}"
         ${currentType === type ? 'checked' : ''}
+        ${isDisabled ? 'disabled' : ''}
       >
       <label class="event__type-label  event__type-label--${type}" for="event-type-${type}-1">
         ${type.charAt(0).toUpperCase() + type.slice(1)}
@@ -37,7 +38,7 @@ function createDestinationListTemplate(destinations) {
   return destinations.map((dest) => `<option value="${dest.name}"></option>`).join('');
 }
 
-function createOffersTemplate(offerIds, type, offers) {
+function createOffersTemplate(offerIds, type, offers, isDisabled) {
   const offersForType = offers.find((item) => item.type === type)?.offers ?? [];
 
   if (offersForType.length === 0) {
@@ -57,6 +58,7 @@ function createOffersTemplate(offerIds, type, offers) {
               value="${offer.id}"
               name="event-offer-${offer.id}"
               ${offerIds.includes(offer.id) ? 'checked' : ''}
+              ${isDisabled ? 'disabled' : ''}
             >
             <label class="event__offer-label" for="event-offer-${offer.id}-1">
               <span class="event__offer-title">${offer.title}</span>
@@ -95,13 +97,22 @@ function createDestinationTemplate(destinationId, destinations) {
 }
 
 function createEditPointTemplate(state, destinations, offers) {
-  const {type, destinationId, dateFrom, dateTo, basePrice, offerIds, isEditView} = state;
+  const {type, destinationId, dateFrom, dateTo, basePrice, offerIds, isEditView, isDisabled, isSaving, isDeleting} = state;
 
   const destination = destinations.find((dest) => dest.id === destinationId);
   const destinationName = destination ? destination.name : '';
 
   const startDate = dateFrom ? dayjs(dateFrom).format('DD/MM/YY HH:mm') : '';
   const endDate = dateTo ? dayjs(dateTo).format('DD/MM/YY HH:mm') : '';
+
+  const saveButtonText = isSaving ? 'Saving...' : 'Save';
+
+  let resetButtonText;
+  if (!isEditView) {
+    resetButtonText = 'Cancel';
+  } else {
+    resetButtonText = isDeleting ? 'Deleting...' : 'Delete';
+  }
 
   return (
     `<li class="trip-events__item">
@@ -112,12 +123,12 @@ function createEditPointTemplate(state, destinations, offers) {
               <span class="visually-hidden">Choose event type</span>
               <img class="event__type-icon" width="17" height="17" src="img/icons/${type}.png" alt="Event type icon">
             </label>
-            <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox">
+            <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox" ${isDisabled ? 'disabled' : ''}>
 
             <div class="event__type-list">
               <fieldset class="event__type-group">
                 <legend class="visually-hidden">Event type</legend>
-                ${createTypeListTemplate(type)}
+                ${createTypeListTemplate(type, isDisabled)}
               </fieldset>
             </div>
           </div>
@@ -133,6 +144,7 @@ function createEditPointTemplate(state, destinations, offers) {
               name="event-destination"
               value="${he.encode(destinationName)}"
               list="destination-list-1"
+              ${isDisabled ? 'disabled' : ''}
             >
             <datalist id="destination-list-1">
               ${createDestinationListTemplate(destinations)}
@@ -147,6 +159,7 @@ function createEditPointTemplate(state, destinations, offers) {
               type="text"
               name="event-start-time"
               value="${startDate}"
+              ${isDisabled ? 'disabled' : ''}
             >
             &mdash;
             <label class="visually-hidden" for="event-end-time-1">To</label>
@@ -156,6 +169,7 @@ function createEditPointTemplate(state, destinations, offers) {
               type="text"
               name="event-end-time"
               value="${endDate}"
+              ${isDisabled ? 'disabled' : ''}
             >
           </div>
 
@@ -170,16 +184,17 @@ function createEditPointTemplate(state, destinations, offers) {
               type="text"
               name="event-price"
               value="${basePrice}"
+              ${isDisabled ? 'disabled' : ''}
             >
           </div>
 
-          <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-          <button class="event__reset-btn" type="reset">${isEditView ? 'Delete' : 'Cancel'}</button>
+          <button class="event__save-btn  btn  btn--blue" type="submit">${saveButtonText}</button>
+          <button class="event__reset-btn" type="reset">${resetButtonText}</button>
           ${isEditView ? '<button class="event__rollup-btn" type="button"><span class="visually-hidden">Open event</span></button>' : ''}
         </header>
 
         <section class="event__details">
-          ${createOffersTemplate(offerIds, type, offers)}
+          ${createOffersTemplate(offerIds, type, offers, isDisabled)}
           ${createDestinationTemplate(destinationId, destinations)}
         </section>
       </form>
@@ -348,12 +363,21 @@ export default class EditPointView extends AbstractStatefulView {
   };
 
   static parsePointToState(point, isEditView = true) {
-    return {...point, isEditView};
+    return {
+      ...point,
+      isEditView,
+      isDisabled: false,
+      isSaving: false,
+      isDeleting: false,
+    };
   }
 
   static parseStateToPoint(state) {
     const point = {...state};
     delete point.isEditView;
+    delete point.isDisabled;
+    delete point.isSaving;
+    delete point.isDeleting;
     return point;
   }
 }
