@@ -6,7 +6,7 @@ import 'flatpickr/dist/flatpickr.min.css';
 import {POINT_TYPES} from '../const.js';
 
 const BLANK_POINT = {
-  type: POINT_TYPES[0],
+  type: 'flight',
   destinationId: null,
   dateFrom: null,
   dateTo: null,
@@ -188,9 +188,9 @@ function createEditPointTemplate(state, destinations, offers) {
             >
           </div>
 
-          <button class="event__save-btn  btn  btn--blue" type="submit" ${isDisabled ? 'disabled' : ''}>${saveButtonText}</button>
-          <button class="event__reset-btn" type="reset" ${isDisabled ? 'disabled' : ''}>${resetButtonText}</button>
-          ${isEditView ? `<button class="event__rollup-btn" type="button" ${isDisabled ? 'disabled' : ''}><span class="visually-hidden">Open event</span></button>` : ''}
+          <button class="event__save-btn  btn  btn--blue" type="submit">${saveButtonText}</button>
+          <button class="event__reset-btn" type="reset">${resetButtonText}</button>
+          ${isEditView ? '<button class="event__rollup-btn" type="button"><span class="visually-hidden">Open event</span></button>' : ''}
         </header>
 
         <section class="event__details">

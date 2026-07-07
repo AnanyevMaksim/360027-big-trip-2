@@ -6,10 +6,10 @@ import NewPointButtonView from '../view/new-point-button-view.js';
 import PointPresenter from './point-presenter.js';
 import NewPointPresenter from './new-point-presenter.js';
 import UiBlocker from '../framework/ui-blocker/ui-blocker.js';
-import {render, remove, RenderPosition} from '../framework/render.js';
-import {filter} from '../utils/filter.js';
-import {sortPointByDay, sortPointByTime, sortPointByPrice} from '../utils/point.js';
-import {SortType, UpdateType, UserAction, FilterType} from '../const.js';
+import { render, remove, RenderPosition } from '../framework/render.js';
+import { filter } from '../utils/filter.js';
+import { sortPointByDay, sortPointByTime, sortPointByPrice } from '../utils/point.js';
+import { SortType, UpdateType, UserAction, FilterType } from '../const.js';
 
 const TimeLimit = {
   LOWER_LIMIT: 350,
@@ -40,7 +40,7 @@ export default class BoardPresenter {
     upperLimit: TimeLimit.UPPER_LIMIT,
   });
 
-  constructor({boardContainer, tripMainContainer, pointsModel, destinationsModel, offersModel, filterModel}) {
+  constructor({ boardContainer, tripMainContainer, pointsModel, destinationsModel, offersModel, filterModel }) {
     this.#boardContainer = boardContainer;
     this.#tripMainContainer = tripMainContainer;
     this.#pointsModel = pointsModel;
@@ -90,6 +90,13 @@ export default class BoardPresenter {
   #createPoint() {
     this.#currentSortType = SortType.DAY;
     this.#filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
+
+    if (this.#noPointComponent) {
+      remove(this.#noPointComponent);
+      this.#noPointComponent = null;
+    }
+
+    render(this.#eventListComponent, this.#boardContainer);
     this.#newPointPresenter.init();
   }
 
@@ -136,7 +143,7 @@ export default class BoardPresenter {
         this.#renderBoard();
         break;
       case UpdateType.MAJOR:
-        this.#clearBoard({resetSortType: true});
+        this.#clearBoard({ resetSortType: true });
         this.#renderBoard();
         break;
       case UpdateType.INIT:
@@ -170,6 +177,11 @@ export default class BoardPresenter {
 
   #handleNewPointFormClose = () => {
     this.#newPointButtonComponent.setDisabled(false);
+
+    if (this.points.length === 0) {
+      remove(this.#eventListComponent);
+      this.#renderNoPoints();
+    }
   };
 
   #renderNewPointButton() {
@@ -218,7 +230,7 @@ export default class BoardPresenter {
     render(this.#noPointComponent, this.#boardContainer);
   }
 
-  #clearBoard({resetSortType = false} = {}) {
+  #clearBoard({ resetSortType = false } = {}) {
     this.#newPointPresenter.destroy();
     this.#pointPresenters.forEach((presenter) => presenter.destroy());
     this.#pointPresenters.clear();
