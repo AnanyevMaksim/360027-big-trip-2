@@ -1,9 +1,5 @@
 import dayjs from 'dayjs';
 
-function getRandomArrayElement(items) {
-  return items[Math.floor(Math.random() * items.length)];
-}
-
 function humanizePointDate(date) {
   return date ? dayjs(date).format('MMM DD') : '';
 }
@@ -26,4 +22,4 @@ function sortPointByPrice(pointA, pointB) {
   return pointB.basePrice - pointA.basePrice;
 }
 
-export {getRandomArrayElement, humanizePointDate, humanizePointTime, sortPointByDay, sortPointByTime, sortPointByPrice};
+export {humanizePointDate, humanizePointTime, sortPointByDay, sortPointByTime, sortPointByPrice};
